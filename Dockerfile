@@ -14,7 +14,8 @@ ADD . /app
 
 
 # 构建可执行文件
-RUN go build .
+RUN go build go_ddns_namesilo
+
 
 #最终运行docker的命令
 ENTRYPOINT ["./go_ddns_namesilo"]
