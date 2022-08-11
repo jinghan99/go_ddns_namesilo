@@ -23,6 +23,7 @@ func init() {
 
 	//	设置 logger 输出日志文件
 	log.SetOutput(multiWriter)
+	log.SetPrefix("[ddns_namesilo]")
 	//	设置 logger 输出时间格式
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile)
 }

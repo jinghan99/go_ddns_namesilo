@@ -27,6 +27,8 @@ func init() {
 	//2、 初始化 系统配置参数环境变量
 	initSysEnv()
 
+	log.Printf("go_ddns_namesilo 配置：%v \n", MyConfig)
+
 }
 
 func initSysEnv() {
