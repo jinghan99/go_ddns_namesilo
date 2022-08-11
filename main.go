@@ -29,6 +29,8 @@ func init() {
 }
 
 func main() {
+	// 先执行一次
+	go handle.DDnsByNameSilo()
 	//创建一个cron实例
 	c := cron.New()
 	//执行定时任务 每30分钟执行一次
