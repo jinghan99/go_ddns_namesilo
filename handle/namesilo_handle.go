@@ -25,22 +25,26 @@ func DDnsByNameSilo() {
 	//1、获取 dns 记录id
 	records, err := dnsListRecords()
 	if err != nil {
-		log.Panicln(err)
+		log.Println(err)
+		return
 	}
 	//2、 匹配 需要 动态绑定的host
 	rrId, err := matchDomainRecordId(records)
 	if err != nil {
-		log.Panicln(err)
+		log.Println(err)
+		return
 	}
 	// 3、获取当前地址IP
 	ip, err := myIp()
 	if err != nil {
-		log.Panicln(err)
+		log.Println(err)
+		return
 	}
 	//4、更新dns
 	err = updateDnsRecord(rrId, ip.IP)
 	if err != nil {
-		log.Panicln(err)
+		log.Println(err)
+		return
 	}
 }
 
