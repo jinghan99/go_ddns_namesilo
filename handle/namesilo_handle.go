@@ -3,7 +3,6 @@
 package handle
 
 import (
-	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"go_ddns_namesilo/config"
@@ -50,21 +49,22 @@ func DDnsByNameSilo() {
 
 // MyIp 我的本地ip
 func myIp() (*MyIpMOdel, error) {
-	httpUrl := "https://api.myip.com/"
+	httpUrl := "http://checkip.amazonaws.com/"
 	resp, err := http.Get(httpUrl)
 	if err != nil {
 		return nil, err
 	}
 
 	var myIp *MyIpMOdel
-
 	// body 正确响应 json  格式 {"ip":"118.112.111.89","country":"China","cc":"CN"}
-	body, err := ioutil.ReadAll(resp.Body)
-	if err := json.Unmarshal(body, &myIp); err != nil {
-		return nil, err
+	if resp.StatusCode == http.StatusOK {
+		ip, _ := ioutil.ReadAll(resp.Body) //把	body 内容读入字符串 s
+		if ipStr := string(ip); ipStr != "" {
+			myIp = &MyIpMOdel{IP: ipStr}
+			return myIp, nil
+		}
 	}
-
-	return myIp, nil
+	return nil, errors.New("当当前地址ip查询失败")
 }
 
 // DnsListRecords 获取 namesilo列出当前 DNS 记录
