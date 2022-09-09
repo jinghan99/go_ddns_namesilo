@@ -10,3 +10,7 @@ func Test_myIp(t *testing.T) {
 		log.Println(myIp())
 	}
 }
+
+func TestDDnsByNameSilo(t *testing.T) {
+	DDnsByNameSilo()
+}

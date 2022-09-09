@@ -1,5 +1,5 @@
 // Package tools 工具库  域名 ddns 动态修改
-//api :https://www.namesilo.com/api-reference#dns/dns-list-records
+// api :https://www.namesilo.com/api-reference#dns/dns-list-records
 package handle
 
 import (
@@ -64,7 +64,7 @@ func myIp() (*MyIpMOdel, error) {
 			return myIp, nil
 		}
 	}
-	return nil, errors.New("当当前地址ip查询失败")
+	return nil, errors.New("当前地址ip查询失败")
 }
 
 // DnsListRecords 获取 namesilo列出当前 DNS 记录
@@ -119,14 +119,14 @@ func matchDomainRecordId(record *models.NameSiloRecordModel) (string, error) {
 }
 
 // UpdateDnsRecord Update an existing DNS resource record.
-//https://www.namesilo.com/api/dnsUpdateRecord?version=1
-//&type=xml
-//&key=12345
-//&domain=namesilo.com
-//&rrid=1a2b3 rrid：资源记录的唯一 ID。您可以使用 dnsListRecords 获取此值。
-//&rrhost=test
-//&rrvalue=55.55.55.55
-//&rrttl=7207
+// https://www.namesilo.com/api/dnsUpdateRecord?version=1
+// &type=xml
+// &key=12345
+// &domain=namesilo.com
+// &rrid=1a2b3 rrid：资源记录的唯一 ID。您可以使用 dnsListRecords 获取此值。
+// &rrhost=test
+// &rrvalue=55.55.55.55
+// &rrttl=7207
 func updateDnsRecord(rrId, updateValue string) error {
 	httpUrl := "https://www.namesilo.com/api/dnsUpdateRecord?version=1&type=xml"
 
@@ -169,5 +169,5 @@ func updateDnsRecord(rrId, updateValue string) error {
 		return nil
 	}
 
-	return errors.New("UpdateDnsRecord error")
+	return errors.New("UpdateDnsRecord error :" + updateResp.Text)
 }
