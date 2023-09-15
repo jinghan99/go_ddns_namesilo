@@ -16,6 +16,7 @@ type NameSiloConf struct {
 	ApiKey   string `yaml:"apikey"`
 	Domain   string `yaml:"domain"`
 	DDnsHost string `yaml:"ddns_host"`
+	DDnsType string `yaml:"ddns_type"`
 }
 
 // MyConfig 初始化 全局配置参数
@@ -44,6 +45,10 @@ func initSysEnv() {
 	DDnsHost, found := syscall.Getenv("ddns_host")
 	if found {
 		MyConfig.DDnsHost = DDnsHost
+	}
+	DDnsType, found := syscall.Getenv("ddns_type")
+	if found {
+		MyConfig.DDnsHost = DDnsType
 	}
 }
 

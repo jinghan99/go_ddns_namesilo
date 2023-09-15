@@ -5,12 +5,15 @@ package handle
 import (
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"go_ddns_namesilo/config"
 	models "go_ddns_namesilo/model"
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
+	"strings"
 )
 
 type MyIpMOdel struct {
@@ -24,13 +27,13 @@ func DDnsByNameSilo() {
 	//1、获取 dns 记录id
 	records, err := dnsListRecords()
 	if err != nil {
-		log.Println(err)
+		log.Println("##### dnsListRecords error #####", err)
 		return
 	}
 	//2、 匹配 需要 动态绑定的host
 	rrId, err := matchDomainRecordId(records)
 	if err != nil {
-		log.Println(err)
+		log.Println("##### matchDomainRecordId error #####", err)
 		return
 	}
 	// 3、获取当前地址IP
@@ -39,6 +42,7 @@ func DDnsByNameSilo() {
 		log.Println(err)
 		return
 	}
+
 	//4、更新dns
 	err = updateDnsRecord(rrId, ip.IP)
 	if err != nil {
@@ -49,19 +53,26 @@ func DDnsByNameSilo() {
 
 // MyIp 我的本地ip
 func myIp() (*MyIpMOdel, error) {
-	httpUrl := "http://checkip.amazonaws.com/"
-	resp, err := http.Get(httpUrl)
-	if err != nil {
-		return nil, err
-	}
-
-	var myIp *MyIpMOdel
-	// body 正确响应 json  格式 {"ip":"118.112.111.89","country":"China","cc":"CN"}
-	if resp.StatusCode == http.StatusOK {
-		ip, _ := ioutil.ReadAll(resp.Body) //把	body 内容读入字符串 s
-		if ipStr := string(ip); ipStr != "" {
-			myIp = &MyIpMOdel{IP: ipStr}
-			return myIp, nil
+	//判断 类型 是需要 ipv4 还是 ipv6
+	if "ipv6" == config.MyConfig.DDnsType {
+		ipv6Str, err := GetIPv6Address()
+		var myIp *MyIpMOdel
+		myIp = &MyIpMOdel{IP: ipv6Str}
+		return myIp, err
+	} else {
+		httpUrl := "http://checkip.amazonaws.com/"
+		resp, err := http.Get(httpUrl)
+		if err != nil {
+			return nil, err
+		}
+		var myIp *MyIpMOdel
+		// body 正确响应 json  格式 {"ip":"118.112.111.89","country":"China","cc":"CN"}
+		if resp.StatusCode == http.StatusOK {
+			ip, _ := ioutil.ReadAll(resp.Body) //把	body 内容读入字符串 s
+			if ipStr := string(ip); ipStr != "" {
+				myIp = &MyIpMOdel{IP: ipStr}
+				return myIp, nil
+			}
 		}
 	}
 	return nil, errors.New("当前地址ip查询失败")
@@ -94,6 +105,7 @@ func dnsListRecords() (*models.NameSiloRecordModel, error) {
 	// body 正确响应 xml 格式
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		log.Println("##### dnsListRecords error #####", err)
 		return nil, err
 	}
 	var record *models.NameSiloRecordModel
@@ -111,6 +123,7 @@ func matchDomainRecordId(record *models.NameSiloRecordModel) (string, error) {
 
 	for _, value := range resourceRecord {
 		// 匹配成功 ddns 需要的 域名 返回
+		log.Printf("match host：%v , config：%v \n", value.Host.Text, config.MyConfig.DDnsHost+"."+config.MyConfig.Domain)
 		if value.Host.Text == config.MyConfig.DDnsHost+"."+config.MyConfig.Domain {
 			return value.RecordID.Text, nil
 		}
@@ -170,4 +183,29 @@ func updateDnsRecord(rrId, updateValue string) error {
 	}
 
 	return errors.New("UpdateDnsRecord error :" + updateResp.Text)
+}
+
+// 获取 ipv6 地址
+func GetIPv6Address() (string, error) {
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		return "", err
+	}
+
+	for _, iface := range interfaces {
+		addresses, err := iface.Addrs()
+		if err != nil {
+			return "", err
+		}
+		for _, address := range addresses {
+			ipNet, ok := address.(*net.IPNet)
+			if ok && !ipNet.IP.IsLoopback() && ipNet.IP.To4() == nil {
+				ip := ipNet.String()
+				if strings.HasPrefix(ip, "2") && strings.HasSuffix(ip, "/64") {
+					return strings.Split(ip, "/")[0], nil
+				}
+			}
+		}
+	}
+	return "", fmt.Errorf("IPv6 address not found")
 }
