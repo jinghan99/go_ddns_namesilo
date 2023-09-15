@@ -48,7 +48,7 @@ func initSysEnv() {
 	}
 	DDnsType, found := syscall.Getenv("ddns_type")
 	if found {
-		MyConfig.DDnsHost = DDnsType
+		MyConfig.DDnsType = DDnsType
 	}
 }
 
